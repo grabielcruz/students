@@ -54,7 +54,6 @@ func TestGetStudents(t *testing.T) {
 	}
 }
 
-
 func TestCreateStudent(t *testing.T) {
 	router := httprouter.New()
 	router.POST("/students", CreateStudent)
@@ -67,7 +66,7 @@ func TestCreateStudent(t *testing.T) {
 	if err != nil {
 		t.Error("Could not marshal json")
 	}
-	
+
 	requestBody := strings.NewReader(string(jsonStudent))
 	req, err := http.NewRequest("POST", "/students", requestBody)
 	if err != nil {
@@ -82,17 +81,17 @@ func TestCreateStudent(t *testing.T) {
 	}
 
 	t.Log("testing create student success")
-	requestResponse := models.Student{}
+	response := models.Student{}
 	body, err := ioutil.ReadAll(rr.Body)
 	if err != nil {
 		log.Fatal(err)
 		t.Error("Could not read body of response")
 	}
 
-	err = json.Unmarshal(body, &requestResponse)
+	err = json.Unmarshal(body, &response)
 	if err != nil {
 		log.Fatal(err)
-		t.Error("Response body does not containe a student type")
+		t.Error("Response body does not contain a student type")
 	}
 }
 
@@ -107,7 +106,7 @@ func TestCreateStudentNoName(t *testing.T) {
 	if err != nil {
 		t.Error("Could not marshal json")
 	}
-	
+
 	requestBody := strings.NewReader(string(jsonStudent))
 	req, err := http.NewRequest("POST", "/students", requestBody)
 	if err != nil {
@@ -145,7 +144,7 @@ func TestCreateStudentNoSurname(t *testing.T) {
 	if err != nil {
 		t.Error("Could not marshal json")
 	}
-	
+
 	requestBody := strings.NewReader(string(jsonStudent))
 	req, err := http.NewRequest("POST", "/students", requestBody)
 	if err != nil {
@@ -168,6 +167,245 @@ func TestCreateStudentNoSurname(t *testing.T) {
 
 	response := string(body)
 	wanted := "Debe especificar el apellido del estudiante"
+	if response != wanted {
+		t.Errorf("response = %v, wanted %v", response, wanted)
+	}
+}
+
+func TestUpdateStudent(t *testing.T) {
+	router := httprouter.New()
+	router.PUT("/students/:id", UpdateStudent)
+
+	student := models.Student{}
+	student.Name = "Update name"
+	student.Surname = "Update surname"
+
+	jsonStudent, err := json.Marshal(student)
+	if err != nil {
+		t.Error("Could not marshal json")
+	}
+
+	requestBody := strings.NewReader(string(jsonStudent))
+	req, err := http.NewRequest("PUT", "/students/1", requestBody)
+	if err != nil {
+		log.Fatal(err)
+		t.Error("Could not make a post request to /students")
+	}
+
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("status = %v, want %v", status, http.StatusOK)
+	}
+
+	t.Log("testing update student success")
+	response := models.Student{}
+	body, err := ioutil.ReadAll(rr.Body)
+	if err != nil {
+		log.Fatal(err)
+		t.Error("Could not read body of response")
+	}
+	
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		log.Fatal(err)
+		t.Error("Response body does not contain a student type")
+	}
+}
+
+func TestUpdateStudentWrongId(t *testing.T) {
+	router := httprouter.New()
+	router.PUT("/students/:id", UpdateStudent)
+
+	student := models.Student{}
+	student.Name = "Update name"
+	student.Surname = "Update surname"
+
+	jsonStudent, err := json.Marshal(student)
+	if err != nil {
+		t.Error("Could not marshal json")
+	}
+
+	requestBody := strings.NewReader(string(jsonStudent))
+	req, err := http.NewRequest("PUT", "/students/abc", requestBody)
+	if err != nil {
+		log.Fatal(err)
+		t.Error("Could not make a post request to /students")
+	}
+
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("status = %v, want %v", status, http.StatusBadRequest)
+	}
+
+	t.Log("testing update student success")
+	body, err := ioutil.ReadAll(rr.Body)
+	if err != nil {
+		log.Fatal(err)
+		t.Error("Could not read body of response")
+	}
+	
+	response := string(body)
+	wanted := "Debe especificar el id del estudiante que quires actualizar"
+	if response != wanted {
+		t.Errorf("response = %v, wanted %v", response, wanted)
+	}
+}
+
+func TestUpdateStudentIdLessThanZero(t *testing.T) {
+	router := httprouter.New()
+	router.PUT("/students/:id", UpdateStudent)
+
+	student := models.Student{}
+	student.Name = "Update name"
+	student.Surname = "Update surname"
+
+	jsonStudent, err := json.Marshal(student)
+	if err != nil {
+		t.Error("Could not marshal json")
+	}
+
+	requestBody := strings.NewReader(string(jsonStudent))
+	req, err := http.NewRequest("PUT", "/students/0", requestBody)
+	if err != nil {
+		log.Fatal(err)
+		t.Error("Could not make a post request to /students")
+	}
+
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("status = %v, want %v", status, http.StatusBadRequest)
+	}
+
+	t.Log("testing update student success")
+	body, err := ioutil.ReadAll(rr.Body)
+	if err != nil {
+		log.Fatal(err)
+		t.Error("Could not read body of response")
+	}
+	
+	response := string(body)
+	wanted := "El id del estudiante debe ser un número mayor a cero"
+	if response != wanted {
+		t.Errorf("response = %v, wanted %v", response, wanted)
+	}
+}
+
+func TestUpdateStudentNoName(t *testing.T) {
+	router := httprouter.New()
+	router.PUT("/students/:id", UpdateStudent)
+
+	student := models.Student{}
+	student.Surname = "Update surname"
+
+	jsonStudent, err := json.Marshal(student)
+	if err != nil {
+		t.Error("Could not marshal json")
+	}
+
+	requestBody := strings.NewReader(string(jsonStudent))
+	req, err := http.NewRequest("PUT", "/students/1", requestBody)
+	if err != nil {
+		log.Fatal(err)
+		t.Error("Could not make a post request to /students")
+	}
+
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("status = %v, want %v", status, http.StatusBadRequest)
+	}
+
+	t.Log("testing update student success")
+	body, err := ioutil.ReadAll(rr.Body)
+	if err != nil {
+		log.Fatal(err)
+		t.Error("Could not read body of response")
+	}
+	
+	response := string(body)
+	wanted := "Debe especificar el nombre del estudiante"
+	if response != wanted {
+		t.Errorf("response = %v, wanted %v", response, wanted)
+	}
+}
+
+func TestUpdateStudentNoSurname(t *testing.T) {
+	router := httprouter.New()
+	router.PUT("/students/:id", UpdateStudent)
+
+	student := models.Student{}
+	student.Name = "Updated name"
+
+	jsonStudent, err := json.Marshal(student)
+	if err != nil {
+		t.Error("Could not marshal json")
+	}
+
+	requestBody := strings.NewReader(string(jsonStudent))
+	req, err := http.NewRequest("PUT", "/students/1", requestBody)
+	if err != nil {
+		log.Fatal(err)
+		t.Error("Could not make a post request to /students")
+	}
+
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("status = %v, want %v", status, http.StatusBadRequest)
+	}
+
+	t.Log("testing update student success")
+	body, err := ioutil.ReadAll(rr.Body)
+	if err != nil {
+		log.Fatal(err)
+		t.Error("Could not read body of response")
+	}
+	
+	response := string(body)
+	wanted := "Debe especificar el apellido del estudiante"
+	if response != wanted {
+		t.Errorf("response = %v, wanted %v", response, wanted)
+	}
+}
+
+func TestUpdateStudentNonExistingId(t *testing.T) {
+	router := httprouter.New()
+	router.PUT("/students/:id", UpdateStudent)
+
+	student := models.Student{}
+	student.Name = "Updated name"
+	student.Surname = "Updated surname"
+
+	jsonStudent, err := json.Marshal(student)
+	if err != nil {
+		t.Error("Could not marshal json")
+	}
+
+	requestBody := strings.NewReader(string(jsonStudent))
+	req, err := http.NewRequest("PUT", "/students/999999", requestBody)
+	if err != nil {
+		log.Fatal(err)
+		t.Error("Could not make a post request to /students")
+	}
+
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("status = %v, want %v", status, http.StatusBadRequest)
+	}
+
+	t.Log("testing update student success")
+	body, err := ioutil.ReadAll(rr.Body)
+	if err != nil {
+		log.Fatal(err)
+		t.Error("Could not read body of response")
+	}
+	
+	response := string(body)
+	wanted := "El id especificado no pertenece a ningún estudiante"
 	if response != wanted {
 		t.Errorf("response = %v, wanted %v", response, wanted)
 	}

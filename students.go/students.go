@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"example.com/students/database"
 	"example.com/students/models"
@@ -20,7 +21,7 @@ func GetStudents(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 	defer db.Close()
-	studentsQuery := "SELECT * FROM students;"
+	studentsQuery := "SELECT * FROM students ORDER BY id;"
 
 	rows, err := db.Query(studentsQuery)
 	if err != nil {
@@ -94,6 +95,80 @@ func CreateStudent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 	}
 
 	response, err := json.Marshal(createdStudent)
+	if err != nil {
+		utils.SendInternalServerError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(response)
+}
+
+func UpdateStudent(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var student models.Student
+	studentId, err := strconv.Atoi(ps.ByName("id"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Debe especificar el id del estudiante que quires actualizar")
+		return
+	}
+
+	if studentId <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "El id del estudiante debe ser un número mayor a cero")
+		return
+	}
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "No se pudo leer el cuerpo de la petición")
+		return
+	}
+
+	err = json.Unmarshal(body, &student)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "La data recibida no es del tipo Student")
+		return
+	}
+
+	if student.Name == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Debe especificar el nombre del estudiante")
+		return
+	}
+
+	if student.Surname == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Debe especificar el apellido del estudiante")
+		return
+	}
+
+	db, err := database.ConnectDB()
+	if err != nil {
+		utils.SendInternalServerError(w, err)
+		return
+	}
+	defer db.Close()
+
+	posgrestDate := student.Birthdate.Format("2006-01-02")
+	updateStudentQuery := "UPDATE students SET name = $1, surname = $2, code = $3, grade = $4, birthdate = $5, public_id = $6, photo = $7 WHERE id = $8 RETURNING id, name, surname, code, grade, birthdate, public_id, photo;"
+	updatedStudent := models.Student{}
+
+	row := db.QueryRow(updateStudentQuery, student.Name, student.Surname, student.Code, student.Grade, posgrestDate, student.PublicId, student.Photo, studentId)
+
+	err = row.Scan(&updatedStudent.Id, &updatedStudent.Name, &updatedStudent.Surname, &updatedStudent.Code, &updatedStudent.Grade, &updatedStudent.Birthdate, &updatedStudent.PublicId, &updatedStudent.Photo)
+	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "El id especificado no pertenece a ningún estudiante")
+			return
+		}
+		utils.SendInternalServerError(w, err)
+		return
+	}
+
+	response, err := json.Marshal(updatedStudent)
 	if err != nil {
 		utils.SendInternalServerError(w, err)
 		return
