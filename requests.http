@@ -1,6 +1,6 @@
 # http://localhost:8080
 
-http://localhost:8080/students
+# http://localhost:8080/students
 
 POST http://localhost:8080/students HTTP/1.1
 content-type: application/json
@@ -11,7 +11,7 @@ content-type: application/json
   "Surname": "New Student Lastname SQL injection",
   "Code": "",
   "Grade": "",
-  "Birthdate": "1989-01-05T00:00:00Z",
+  "Birthdate": "1990-08-29T00:00:00Z",
   "PublicId": "",
   "Photo": ""
 }

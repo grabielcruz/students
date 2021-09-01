@@ -84,19 +84,13 @@ func CreateStudent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 	posgrestDate := student.Birthdate.Format("2006-01-02")
 	createStudentQuery := "INSERT INTO students (name, surname, code, grade, birthdate, public_id, photo) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, name, surname, code, grade, birthdate, public_id, photo;"
 	createdStudent := models.Student{}
-	
-	rows, err := db.Query(createStudentQuery, student.Name, student.Surname, student.Code, student.Grade, posgrestDate, student.PublicId, student.Photo)
+
+	row := db.QueryRow(createStudentQuery, student.Name, student.Surname, student.Code, student.Grade, posgrestDate, student.PublicId, student.Photo)
+
+	err = row.Scan(&createdStudent.Id, &createdStudent.Name, &createdStudent.Surname, &createdStudent.Code, &createdStudent.Grade, &createdStudent.Birthdate, &createdStudent.PublicId, &createdStudent.Photo)
 	if err != nil {
 		utils.SendInternalServerError(w, err)
 		return
-	}
-
-	for rows.Next() {
-		err := rows.Scan(&createdStudent.Id, &createdStudent.Name, &createdStudent.Surname, &createdStudent.Code, &createdStudent.Grade, &createdStudent.Birthdate, &createdStudent.PublicId, &createdStudent.Photo)
-		if err != nil {
-			utils.SendInternalServerError(w, err)
-			return
-		}
 	}
 
 	response, err := json.Marshal(createdStudent)
