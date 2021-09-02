@@ -176,3 +176,49 @@ func UpdateStudent(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 }
+
+func DeleteStudent(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	studentId, err := strconv.Atoi(ps.ByName("id"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Debe especificar el id del estudiante que desea eliminar")
+		return
+	}
+
+	if studentId <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "El id del estudiante debe ser un número mayor a cero")
+		return
+	}
+
+	db, err := database.ConnectDB()
+	if err != nil {
+		utils.SendInternalServerError(w, err)
+		return
+	}
+	defer db.Close()
+
+	deleteStudentQuery := "DELETE FROM students WHERE id = $1 RETURNING id;"
+	deletedStudentId := models.IdResponse{}
+
+	row := db.QueryRow(deleteStudentQuery, studentId)
+
+	err = row.Scan(&deletedStudentId.Id)
+	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "El id especificado no pertenece a ningún estudiante")
+			return
+		}
+		utils.SendInternalServerError(w, err)
+		return
+	}
+
+	response, err := json.Marshal(deletedStudentId)
+	if err != nil {
+		utils.SendInternalServerError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(response)
+}
