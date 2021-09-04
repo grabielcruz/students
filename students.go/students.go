@@ -31,7 +31,7 @@ func GetStudents(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	for rows.Next() {
 		student := models.Student{}
-		if err := rows.Scan(&student.Id, &student.Name, &student.Surname, &student.Code, &student.Grade, &student.Birthdate, &student.PublicId, &student.Photo); err != nil {
+		if err := rows.Scan(&student.Id, &student.Name, &student.Surname, &student.Code, &student.Grade, &student.Section, &student.Birthdate, &student.PublicId, &student.Photo); err != nil {
 			utils.SendInternalServerError(w, err)
 			return
 		}
@@ -83,12 +83,12 @@ func CreateStudent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 	defer db.Close()
 
 	posgrestDate := student.Birthdate.Format("2006-01-02")
-	createStudentQuery := "INSERT INTO students (name, surname, code, grade, birthdate, public_id, photo) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, name, surname, code, grade, birthdate, public_id, photo;"
+	createStudentQuery := "INSERT INTO students (name, surname, code, grade, section, birthdate, public_id, photo) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, name, surname, code, grade, section, birthdate, public_id, photo;"
 	createdStudent := models.Student{}
 
-	row := db.QueryRow(createStudentQuery, student.Name, student.Surname, student.Code, student.Grade, posgrestDate, student.PublicId, student.Photo)
+	row := db.QueryRow(createStudentQuery, student.Name, student.Surname, student.Code, student.Grade, student.Section, posgrestDate, student.PublicId, student.Photo)
 
-	err = row.Scan(&createdStudent.Id, &createdStudent.Name, &createdStudent.Surname, &createdStudent.Code, &createdStudent.Grade, &createdStudent.Birthdate, &createdStudent.PublicId, &createdStudent.Photo)
+	err = row.Scan(&createdStudent.Id, &createdStudent.Name, &createdStudent.Surname, &createdStudent.Code, &createdStudent.Grade, &student.Section, &createdStudent.Birthdate, &createdStudent.PublicId, &createdStudent.Photo)
 	if err != nil {
 		utils.SendInternalServerError(w, err)
 		return
@@ -152,12 +152,12 @@ func UpdateStudent(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	defer db.Close()
 
 	posgrestDate := student.Birthdate.Format("2006-01-02")
-	updateStudentQuery := "UPDATE students SET name = $1, surname = $2, code = $3, grade = $4, birthdate = $5, public_id = $6, photo = $7 WHERE id = $8 RETURNING id, name, surname, code, grade, birthdate, public_id, photo;"
+	updateStudentQuery := "UPDATE students SET name = $1, surname = $2, code = $3, grade = $4, section = $5, birthdate = $6, public_id = $7, photo = $8 WHERE id = $9 RETURNING id, name, surname, code, grade, section, birthdate, public_id, photo;"
 	updatedStudent := models.Student{}
 
-	row := db.QueryRow(updateStudentQuery, student.Name, student.Surname, student.Code, student.Grade, posgrestDate, student.PublicId, student.Photo, studentId)
+	row := db.QueryRow(updateStudentQuery, student.Name, student.Surname, student.Code, student.Grade, student.Section, posgrestDate, student.PublicId, student.Photo, studentId)
 
-	err = row.Scan(&updatedStudent.Id, &updatedStudent.Name, &updatedStudent.Surname, &updatedStudent.Code, &updatedStudent.Grade, &updatedStudent.Birthdate, &updatedStudent.PublicId, &updatedStudent.Photo)
+	err = row.Scan(&updatedStudent.Id, &updatedStudent.Name, &updatedStudent.Surname, &updatedStudent.Code, &updatedStudent.Grade, &updatedStudent.Section, &updatedStudent.Birthdate, &updatedStudent.PublicId, &updatedStudent.Photo)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
 			w.WriteHeader(http.StatusBadRequest)

@@ -8,6 +8,7 @@ type Student struct {
 	Surname string
 	Code string
 	Grade string
+	Section string
 	Birthdate time.Time
 	PublicId string
 	Photo string
