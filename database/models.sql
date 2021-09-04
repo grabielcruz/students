@@ -10,7 +10,7 @@ CREATE TABLE students (
   surname TEXT NOT NULL,
   code TEXT DEFAULT '',
   grade TEXT DEFAULT '',
-  birthdate DATE DEFAULT '1900-01-01',
+  birthdate DATE DEFAULT '0001-01-01',
   public_id TEXT DEFAULT '',
   photo TEXT DEFAULT ''
 );

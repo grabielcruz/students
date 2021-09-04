@@ -12,3 +12,9 @@ type Student struct {
 	PublicId string
 	Photo string
 }
+
+type IdResponse struct {
+	Id int
+}
+
+var ImageTypes = []string{".webp", ".svg", ".png", ".apng", ".avif", ".gif", ".jpg", ".jpeg", ".jfif", ".pjpeg", ".pjp"}
