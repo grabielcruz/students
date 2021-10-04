@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"example.com/students/handle_uploads"
-	"example.com/students/students.go"
+	"example.com/students/students"
 	"github.com/julienschmidt/httprouter"
 )
 

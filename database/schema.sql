@@ -5,7 +5,7 @@ CREATE DATABASE students;
 \c students;
 
 CREATE TYPE grade_type AS ENUM (
-  '',
+  'sin grado',
   'sala de tres',
   'sala de cuatro', 
   'sala de cinco', 
@@ -24,15 +24,15 @@ CREATE TYPE grade_type AS ENUM (
   'quinto año'
   );
 
-CREATE TYPE section_type AS ENUM ('','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z');
+CREATE TYPE section_type AS ENUM ('sin sección','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z');
 
 CREATE TABLE students (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
   surname TEXT NOT NULL,
   code TEXT DEFAULT '',
-  grade grade_type DEFAULT '',
-  section section_type DEFAULT '',
+  grade grade_type DEFAULT 'sin grado',
+  section section_type DEFAULT 'sin sección',
   birthdate DATE DEFAULT '0001-01-01',
   public_id TEXT DEFAULT '',
   photo TEXT DEFAULT ''

@@ -21,7 +21,7 @@ func GetStudents(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 	defer db.Close()
-	studentsQuery := "SELECT * FROM students ORDER BY id;"
+	studentsQuery := "SELECT * FROM students ORDER BY id DESC;"
 
 	rows, err := db.Query(studentsQuery)
 	if err != nil {
@@ -88,7 +88,7 @@ func CreateStudent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 
 	row := db.QueryRow(createStudentQuery, student.Name, student.Surname, student.Code, student.Grade, student.Section, posgrestDate, student.PublicId, student.Photo)
 
-	err = row.Scan(&createdStudent.Id, &createdStudent.Name, &createdStudent.Surname, &createdStudent.Code, &createdStudent.Grade, &student.Section, &createdStudent.Birthdate, &createdStudent.PublicId, &createdStudent.Photo)
+	err = row.Scan(&createdStudent.Id, &createdStudent.Name, &createdStudent.Surname, &createdStudent.Code, &createdStudent.Grade, &createdStudent.Section, &createdStudent.Birthdate, &createdStudent.PublicId, &createdStudent.Photo)
 	if err != nil {
 		utils.SendInternalServerError(w, err)
 		return
