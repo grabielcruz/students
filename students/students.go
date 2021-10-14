@@ -82,11 +82,11 @@ func CreateStudent(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 	}
 	defer db.Close()
 
-	posgrestDate := student.Birthdate.Format("2006-01-02")
+	// posgrestDate := student.Birthdate.Format("2006-01-02")
 	createStudentQuery := "INSERT INTO students (name, surname, code, grade, section, birthdate, public_id, photo) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, name, surname, code, grade, section, birthdate, public_id, photo;"
 	createdStudent := models.Student{}
 
-	row := db.QueryRow(createStudentQuery, student.Name, student.Surname, student.Code, student.Grade, student.Section, posgrestDate, student.PublicId, student.Photo)
+	row := db.QueryRow(createStudentQuery, student.Name, student.Surname, student.Code, student.Grade, student.Section, student.Birthdate, student.PublicId, student.Photo)
 
 	err = row.Scan(&createdStudent.Id, &createdStudent.Name, &createdStudent.Surname, &createdStudent.Code, &createdStudent.Grade, &createdStudent.Section, &createdStudent.Birthdate, &createdStudent.PublicId, &createdStudent.Photo)
 	if err != nil {
@@ -151,11 +151,11 @@ func UpdateStudent(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	}
 	defer db.Close()
 
-	posgrestDate := student.Birthdate.Format("2006-01-02")
+	// posgrestDate := student.Birthdate.Format("2006-01-02")
 	updateStudentQuery := "UPDATE students SET name = $1, surname = $2, code = $3, grade = $4, section = $5, birthdate = $6, public_id = $7, photo = $8 WHERE id = $9 RETURNING id, name, surname, code, grade, section, birthdate, public_id, photo;"
 	updatedStudent := models.Student{}
 
-	row := db.QueryRow(updateStudentQuery, student.Name, student.Surname, student.Code, student.Grade, student.Section, posgrestDate, student.PublicId, student.Photo, studentId)
+	row := db.QueryRow(updateStudentQuery, student.Name, student.Surname, student.Code, student.Grade, student.Section, student.Birthdate, student.PublicId, student.Photo, studentId)
 
 	err = row.Scan(&updatedStudent.Id, &updatedStudent.Name, &updatedStudent.Surname, &updatedStudent.Code, &updatedStudent.Grade, &updatedStudent.Section, &updatedStudent.Birthdate, &updatedStudent.PublicId, &updatedStudent.Photo)
 	if err != nil {
